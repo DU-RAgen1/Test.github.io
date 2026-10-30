@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAgen1s — Store your files. Own your cloud.</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        obsidian: '#090A0F',
+                        surface: '#131620',
+                        surfaceHighlight: '#1A1E2E',
+                        accentBlue: '#2563EB',
+                        accentCyan: '#0EA5E9',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #090A0F;
+            color: #F8FAFC;
+            overflow-x: hidden;
+        }
+        .glass-panel {
+            background: rgba(19, 22, 32, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-panel-hover:hover {
+            border-color: rgba(37, 99, 235, 0.4);
+            box-shadow: 0 0 30px rgba(37, 99, 235, 0.15);
+        }
+        .glow-blue {
+            box-shadow: 0 0 50px -10px rgba(37, 99, 235, 0.4);
+        }
+        .glow-cyan {
+            box-shadow: 0 0 50px -10px rgba(14, 165, 233, 0.3);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090A0F;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1A1E2E;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2563EB;
+        }
+    </style>
+</head>
+<body class="bg-obsidian text-slate-100 antialiased selection:bg-blue-600 selection:text-white">
+
+    <!-- Notification Toast Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+    <!-- Navigation Header -->
+    <header class="fixed top-0 left-0 right-0 z-40 glass-panel border-b border-white/5 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Logo -->
+            <a href="#" class="flex items-center space-x-3 group">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center glow-blue group-hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-cloud-arrow-up text-white text-lg"></i>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-xl font-bold tracking-tight text-white flex items-center gap-1.5">
+                        CAgen1s <span class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 font-medium">OS</span>
+                    </span>
+                    <span class="text-[10px] text-slate-400 tracking-wider uppercase font-semibold">Own Your Cloud</span>
+                </div>
+            </a>
+
+            <!-- Desktop Nav Links -->
+            <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-300">
+                <a href="#features" class="hover:text-blue-400 transition-colors">Features</a>
+                <a href="#engines" class="hover:text-blue-400 transition-colors">Storage Engines</a>
+                <a href="#bento" class="hover:text-blue-400 transition-colors">Architecture</a>
+                <a href="#dashboard" class="hover:text-blue-400 transition-colors">Live Demo</a>
+                <a href="#guarantees" class="hover:text-blue-400 transition-colors">Commitment</a>
+            </nav>
+
+            <!-- Action Buttons -->
+            <div class="hidden sm:flex items-center space-x-4">
+                <button onclick="showToast('Redirecting to secure login...', 'info')" class="text-sm font-medium text-slate-300 hover:text-white px-4 py-2 rounded-lg transition-colors">
+                    Sign In
+                </button>
+                <a href="#hero" class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all glow-blue flex items-center gap-2">
+                    <span>Start Free</span>
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                </a>
+            </div>
+
+            <!-- Mobile Menu Toggle -->
+            <button id="mobile-menu-btn" class="md:hidden text-slate-300 hover:text-white p-2 focus:outline-none">
+                <i class="fa-solid fa-bars text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden glass-panel border-b border-white/10 px-6 py-4 space-y-3">
+            <a href="#features" class="block text-slate-300 hover:text-white py-1">Features</a>
+            <a href="#engines" class="block text-slate-300 hover:text-white py-1">Storage Engines</a>
+            <a href="#bento" class="block text-slate-300 hover:text-white py-1">Architecture</a>
+            <a href="#dashboard" class="block text-slate-300 hover:text-white py-1">Live Demo</a>
+            <a href="#guarantees" class="block text-slate-300 hover:text-white py-1">Commitment</a>
+            <div class="pt-2 border-t border-white/10 flex flex-col space-y-2">
+                <button onclick="showToast('Redirecting to login...', 'info')" class="w-full text-center py-2 text-slate-300 font-medium">Sign In</button>
+                <a href="#hero" class="w-full bg-blue-600 text-center py-2.5 rounded-xl font-semibold text-white">Start Free</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 1. Header & Hero Section -->
+    <section id="hero" class="relative pt-32 pb-20 md:pt-44 md:pb-32 overflow-hidden">
+        <!-- Background Ambient Glows -->
+        <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/15 rounded-full blur-[140px] pointer-events-none"></div>
+        <div class="absolute top-1/3 right-10 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            
+            <!-- Badge -->
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-8 animate-pulse">
+                <i class="fa-solid fa-bolt-lightning text-cyan-400"></i>
+                <span>Introducing CAgen1s Cloud OS v2.4</span>
+                <i class="fa-solid fa-chevron-right text-[10px]"></i>
+            </div>
+
+            <!-- Main Headline -->
+            <h1 class="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-white mb-6 leading-[1.1]">
+                Store your files. <br>
+                <span class="bg-gradient-to-r from-blue-500 via-cyan-400 to-indigo-500 bg-clip-text text-transparent">Own your cloud.</span>
+            </h1>
+
+            <!-- Pitch Subtitle -->
+            <p class="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+                Get <span class="text-white font-medium">2GB</span> of traditional managed cloud storage out of the box, or hook up your personal Telegram account for <span class="text-cyan-400 font-medium">infinite, free space</span> with zero paywalls.
+            </p>
+
+            <!-- Action Box (Email Signup) -->
+            <div class="max-w-xl mx-auto mb-16">
+                <form id="signup-form" onsubmit="handleSignup(event)" class="glass-panel p-2 rounded-2xl flex flex-col sm:flex-row gap-2 shadow-2xl border-white/10">
+                    <div class="relative flex-1">
+                        <i class="fa-regular fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="email" id="signup-email" required placeholder="Enter your work email..." class="w-full bg-transparent pl-11 pr-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none">
+                    </div>
+                    <button type="submit" class="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-semibold px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 group">
+                        <span>Start Free</span>
+                        <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                </form>
+                <p class="text-xs text-slate-500 mt-3 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-shield-halved text-emerald-400"></i>
+                    <span>No credit card required • Free forever managed tier included</span>
+                </p>
+            </div>
+
+            <!-- Storage by the Numbers (Stats Bar) -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+                <div class="glass-panel p-5 rounded-2xl text-center glass-panel-hover transition-all">
+                    <div class="text-3xl font-extrabold text-white mb-1">2GB</div>
+                    <div class="text-xs text-slate-400 font-medium">Managed Cloud Storage</div>
+                </div>
+                <div class="glass-panel p-5 rounded-2xl text-center glass-panel-hover transition-all">
+                    <div class="text-3xl font-extrabold text-cyan-400 mb-1">∞</div>
+                    <div class="text-xs text-slate-400 font-medium">Telegram Infinite Space</div>
+                </div>
+                <div class="glass-panel p-5 rounded-2xl text-center glass-panel-hover transition-all">
+                    <div class="text-3xl font-extrabold text-emerald-400 mb-1">₹0</div>
+                    <div class="text-xs text-slate-400 font-medium">Cost / Free Tier</div>
+                </div>
+                <div class="glass-panel p-5 rounded-2xl text-center glass-panel-hover transition-all">
+                    <div class="text-3xl font-extrabold text-blue-400 mb-1">2.0 GB</div>
+                    <div class="text-xs text-slate-400 font-medium">Max File Size Cap</div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- 2. File Organization & Search Preview -->
+    <section id="features" class="py-24 relative border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-xs uppercase tracking-widest text-blue-400 font-bold mb-3">No More Messy Chats</h2>
+                <h3 class="text-3xl sm:text-4xl font-bold text-white mb-4">Every folder organized. Every file instantly accessible.</h3>
+                <p class="text-slate-400">Experience a clean, desktop-grade file manager mockup that proves your files look like a professional cloud drive, never a chaotic group chat.</p>
+            </div>
+
+            <!-- Interactive File Manager Mockup -->
+            <div class="max-w-5xl mx-auto glass-panel rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+                <!-- Window Header -->
+                <div class="bg-surfaceHighlight px-4 py-3 flex items-center justify-between border-b border-white/10">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 rounded-full bg-rose-500/80"></div>
+                        <div class="w-3 h-3 rounded-full bg-amber-500/80"></div>
+                        <div class="w-3 h-3 rounded-full bg-emerald-500/80"></div>
+                        <span class="text-xs text-slate-400 font-mono ml-4">cagen1s://vault/main-drive</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input type="text" id="file-search-input" oninput="filterFiles()" placeholder="Search folders & files..." class="bg-obsidian/60 border border-white/10 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 w-48 sm:w-64">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Window Body / File Explorer Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-4 min-h-[380px]">
+                    <!-- Sidebar -->
+                    <div class="bg-surface/50 p-4 border-r border-white/5 space-y-1 text-xs">
+                        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 mb-2">Navigation</div>
+                        <button onclick="switchCategory('all')" id="nav-all" class="w-full flex items-center space-x-2 px-3 py-2 rounded-lg bg-blue-600/20 text-blue-400 font-medium transition-colors text-left">
+                            <i class="fa-solid fa-hard-drive"></i>
+                            <span>All Files</span>
+                        </button>
+                        <button onclick="switchCategory('work')" id="nav-work" class="w-full flex items-center space-x-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-white/5 transition-colors text-left">
+                            <i class="fa-solid fa-folder text-amber-400"></i>
+                            <span>Product Launch</span>
+                        </button>
+                        <button onclick="switchCategory('design')" id="nav-design" class="w-full flex items-center space-x-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-white/5 transition-colors text-left">
+                            <i class="fa-solid fa-folder text-cyan-400"></i>
+                            <span>Design Elements</span>
+                        </button>
+                        <button onclick="switchCategory('finance')" id="nav-finance" class="w-full flex items-center space-x-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-white/5 transition-colors text-left">
+                            <i class="fa-solid fa-folder text-emerald-400"></i>
+                            <span>Financial Statements</span>
+                        </button>
+                        <div class="pt-4 text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 mb-2">Storage Engines</div>
+                        <div class="px-3 py-2 rounded-lg bg-surfaceHighlight/40 flex items-center justify-between text-slate-300">
+                            <span class="flex items-center gap-2"><i class="fa-brands fa-telegram text-cyan-400"></i> Telegram Bot</span>
+                            <span class="text-[10px] text-emerald-400 font-mono">Synced</span>
+                        </div>
+                    </div>
+
+                    <!-- Main File List -->
+                    <div class="md:col-span-3 p-6 bg-obsidian/40">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider" id="current-folder-title">Showing All Folders (4 Items)</div>
+                            <button onclick="showToast('Upload modal opened', 'info')" class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5">
+                                <i class="fa-solid fa-plus text-[10px]"></i> Upload File
+                            </button>
+                        </div>
+
+                        <div id="file-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <!-- File Item 1 -->
+                            <div class="file-item glass-panel p-3.5 rounded-xl flex items-center justify-between group hover:border-blue-500/50 transition-all cursor-pointer" data-category="work" data-name="Product Launch Assets">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-lg">
+                                        <i class="fa-solid fa-folder"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-semibold text-white group-hover:text-blue-400 transition-colors">Product Launch Assets</div>
+                                        <div class="text-[11px] text-slate-400">12 items • Updated 2h ago</div>
+                                    </div>
+                                </div>
+                                <span class="text-xs font-mono text-slate-500 bg-white/5 px-2 py-1 rounded">Folder</span>
+                            </div>
+
+                            <!-- File Item 2 -->
+                            <div class="file-item glass-panel p-3.5 rounded-xl flex items-center justify-between group hover:border-blue-500/50 transition-all cursor-pointer" data-category="design" data-name="Design Elements">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 text-lg">
+                                        <i class="fa-solid fa-folder"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-semibold text-white group-hover:text-blue-400 transition-colors">Design Elements</div>
+                                        <div class="text-[11px] text-slate-400">45 items • High Res Assets</div>
+                                    </div>
+                                </div>
+                                <span class="text-xs font-mono text-slate-500 bg-white/5 px-2 py-1 rounded">Folder</span>
+                            </div>
+
+                            <!-- File Item 3 -->
+                            <div class="file-item glass-panel p-3.5 rounded-xl flex items-center justify-between group hover:border-blue-500/50 transition-all cursor-pointer" data-category="finance" data-name="Financial Statements">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-lg">
+                                        <i class="fa-solid fa-folder"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-semibold text-white group-hover:text-blue-400 transition-colors">Financial Statements</div>
+                                        <div class="text-[11px] text-slate-400">Q1-Q4 Reports & Audits</div>
+                                    </div>
+                                </div>
+                                <span class="text-xs font-mono text-slate-500 bg-white/5 px-2 py-1 rounded">Folder</span>
+                            </div>
+
+                            <!-- File Item 4 -->
+                            <div class="file-item glass-panel p-3.5 rounded-xl flex items-center justify-between group hover:border-blue-500/50 transition-all cursor-pointer" data-category="work" data-name="CAgen1s Architecture v2.pdf">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 text-lg">
+                                        <i class="fa-solid fa-file-pdf"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-semibold text-white group-hover:text-blue-400 transition-colors">CAgen1s_Architecture_v2.pdf</div>
+                                        <div class="text-[11px] text-slate-400">14.2 MB • PDF Document</div>
+                                    </div>
+                                </div>
+                                <span class="text-xs font-mono text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">Telegram</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Engine Selection (How You Want to Store) -->
+    <section id="engines" class="py-24 relative border-t border-white/5 bg-surface/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-xs uppercase tracking-widest text-cyan-400 font-bold mb-3">Flexible Infrastructure</h2>
+                <h3 class="text-3xl sm:text-4xl font-bold text-white mb-4">However you choose to store.</h3>
+                <p class="text-slate-400">Split your workload across high-speed managed servers, personal telegram vaults, or robust developer APIs.</p>
+            </div>
+
+            <!-- 3 Pillars Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Pillar 1 -->
+                <div class="glass-panel p-8 rounded-3xl relative flex flex-col justify-between glass-panel-hover transition-all group">
+                    <div class="absolute top-0 right-0 transform translate-x-2 -translate-y-2">
+                        <span class="bg-blue-600/20 border border-blue-500/40 text-blue-400 text-[10px] font-semibold px-3 py-1 rounded-full uppercase">Active Default</span>
+                    </div>
+                    <div>
+                        <div class="w-14 h-14 rounded-2xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 text-2xl mb-6 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-cloud"></i>
+                        </div>
+                        <h4 class="text-xl font-bold text-white mb-3">Managed Cloud Storage</h4>
+                        <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                            Zero configuration required. Get 2GB of high-speed managed cloud storage right away, ready to use in seconds with zero friction.
+                        </p>
+                    </div>
+                    <ul class="space-y-2.5 text-xs text-slate-300 border-t border-white/10 pt-6">
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-blue-400"></i> Instant Provisioning</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-blue-400"></i> Automatic CDN Caching</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-blue-400"></i> 2GB Free Tier Included</li>
+                    </ul>
+                </div>
+
+                <!-- Pillar 2 (Telegram Engine) -->
+                <div class="glass-panel p-8 rounded-3xl relative flex flex-col justify-between glass-panel-hover transition-all group border-cyan-500/30">
+                    <div class="absolute top-0 right-0 transform translate-x-2 -translate-y-2">
+                        <span class="bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 text-[10px] font-semibold px-3 py-1 rounded-full uppercase">Infinite Space</span>
+                    </div>
+                    <div>
+                        <div class="w-14 h-14 rounded-2xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-2xl mb-6 group-hover:scale-110 transition-transform">
+                            <i class="fa-brands fa-telegram"></i>
+                        </div>
+                        <h4 class="text-xl font-bold text-white mb-3">Personal Telegram Engine</h4>
+                        <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                            Link your personal Telegram bot or private channel for limitless file archiving and storage without recurring subscription fees.
+                        </p>
+                    </div>
+                    <ul class="space-y-2.5 text-xs text-slate-300 border-t border-white/10 pt-6">
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-cyan-400"></i> Unlimited Storage Capacity</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-cyan-400"></i> 2.0 GB Max File Size Cap</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-cyan-400"></i> End-to-End Bot Bridge</li>
+                    </ul>
+                </div>
+
+                <!-- Pillar 3 (Developer REST API) -->
+                <div class="glass-panel p-8 rounded-3xl relative flex flex-col justify-between glass-panel-hover transition-all group">
+                    <div class="absolute top-0 right-0 transform translate-x-2 -translate-y-2">
+                        <span class="bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[10px] font-semibold px-3 py-1 rounded-full uppercase">Developer Ready</span>
+                    </div>
+                    <div>
+                        <div class="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-2xl mb-6 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-code"></i>
+                        </div>
+                        <h4 class="text-xl font-bold text-white mb-3">Developer REST API</h4>
+                        <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                            A powerful tool for programmers to automate uploads with a massive 10,000 requests-per-minute speed limit and clean SDKs.
+                        </p>
+                    </div>
+                    <ul class="space-y-2.5 text-xs text-slate-300 border-t border-white/10 pt-6">
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-400"></i> 10,000 req/min limit</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-400"></i> Webhook Event Triggers</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-400"></i> OpenAPI 3.0 Specification</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Core Features Bento Grid -->
+    <section id="bento" class="py-24 relative border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-xs uppercase tracking-widest text-blue-400 font-bold mb-3">Advanced Capabilities</h2>
+                <h3 class="text-3xl sm:text-4xl font-bold text-white mb-4">Engineered for speed and security.</h3>
+                <p class="text-slate-400">Everything you need to stream, migrate, and sync your data seamlessly across platforms.</p>
+            </div>
+
+            <!-- Bento Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                
+                <!-- Bento Card 1: Instant Streaming (Span 2) -->
+                <div class="md:col-span-2 glass-panel p-8 rounded-3xl relative overflow-hidden flex flex-col justify-between glass-panel-hover transition-all">
+                    <div class="absolute right-0 top-0 w-80 h-80 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+                    <div>
+                        <div class="flex items-center space-x-2 text-blue-400 text-xs font-semibold uppercase tracking-wider mb-2">
+                            <i class="fa-solid fa-play"></i> <span>Zero-Wait Playback</span>
+                        </div>
+                        <h4 class="text-2xl font-bold text-white mb-3">Instant In-Browser Streaming</h4>
+                        <p class="text-slate-400 text-sm max-w-lg mb-6">
+                            Stream 4K video and view full-res galleries instantly without downloading the whole file first. Optimized adaptive bitrate for buttery smooth playback.
+                        </p>
+                    </div>
+                    <!-- Mockup Player Interface -->
+                    <div class="bg-surfaceHighlight rounded-2xl p-4 border border-white/10 relative">
+                        <div class="flex items-center justify-between mb-3 text-xs text-slate-400">
+                            <span class="flex items-center gap-2"><i class="fa-solid fa-film text-blue-400"></i> Cinematic_Launch_4K.mp4</span>
+                            <span class="bg-blue-600/20 text-blue-400 px-2 py-0.5 rounded font-mono">4K 60FPS</span>
+                        </div>
+                        <div class="w-full h-32 rounded-xl bg-obsidian flex items-center justify-center relative overflow-hidden group cursor-pointer" onclick="showToast('Starting 4K stream preview...', 'info')">
+                            <div class="absolute inset-0 bg-gradient-to-tr from-blue-900/40 to-cyan-900/40"></div>
+                            <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-lg z-10 shadow-lg group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-play ml-0.5"></i>
+                            </div>
+                            <div class="absolute bottom-2 left-3 right-3 flex items-center justify-between text-[10px] text-slate-300 z-10">
+                                <span>01:24 / 04:12</span>
+                                <div class="w-1/2 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                                    <div class="w-1/3 h-full bg-blue-500 rounded-full"></div>
+                                </div>
+                                <span>HD 1080p60</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bento Card 2: Decentralized Architecture -->
+                <div class="glass-panel p-8 rounded-3xl relative flex flex-col justify-between glass-panel-hover transition-all">
+                    <div>
+                        <div class="flex items-center space-x-2 text-cyan-400 text-xs font-semibold uppercase tracking-wider mb-2">
+                            <i class="fa-solid fa-network-wired"></i> <span>Secure Bridge</span>
+                        </div>
+                        <h4 class="text-xl font-bold text-white mb-3">Decentralized Channel Architecture</h4>
+                        <p class="text-slate-400 text-sm mb-6">
+                            A neat visual diagram showing how our Bot Bridge securely passes data from your dashboard directly to your private Telegram channel.
+                        </p>
+                    </div>
+                    <!-- Mini Architecture Visual -->
+                    <div class="bg-surfaceHighlight/50 p-4 rounded-2xl border border-white/10 space-y-3 text-center">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="bg-blue-500/20 text-blue-400 px-2 py-1 rounded font-mono">Dashboard</span>
+                            <i class="fa-solid fa-arrow-right text-slate-500 animate-pulse"></i>
+                            <span class="bg-cyan-500/20 text-cyan-400 px-2 py-1 rounded font-mono">Bot Bridge</span>
+                            <i class="fa-solid fa-arrow-right text-slate-500 animate-pulse"></i>
+                            <span class="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded font-mono">Telegram</span>
+                        </div>
+                        <div class="text-[11px] text-slate-400 pt-1">Encrypted TLS 1.3 Tunnel • Zero Logging</div>
+                    </div>
+                </div>
+
+                <!-- Bento Card 3: One-Click Storage Migration -->
+                <div class="glass-panel p-8 rounded-3xl relative flex flex-col justify-between glass-panel-hover transition-all">
+                    <div>
+                        <div class="flex items-center space-x-2 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-2">
+                            <i class="fa-solid fa-rotate"></i> <span>Instant Transfer</span>
+                        </div>
+                        <h4 class="text-xl font-bold text-white mb-3">One-Click Storage Migration</h4>
+                        <p class="text-slate-400 text-sm mb-6">
+                            Easily move your files from the free 2GB managed tier over to your unlimited Telegram storage in a single click.
+                        </p>
+                    </div>
+                    <div class="bg-surfaceHighlight/50 p-4 rounded-2xl border border-white/10 flex items-center justify-between">
+                        <div>
+                            <div class="text-xs text-white font-medium">Migrate Free Tier</div>
+                            <div class="text-[10px] text-slate-400">1.4 GB ready to sync</div>
+                        </div>
+                        <button onclick="showToast('Migration initiated to Telegram Vault!', 'success')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-2 rounded-xl font-semibold transition-all">
+                            Migrate Now
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bento Card 4: Android APK & Web App (Span 2) -->
+                <div class="md:col-span-2 glass-panel p-8 rounded-3xl relative overflow-hidden flex flex-col sm:flex-row items-center justify-between gap-6 glass-panel-hover transition-all">
+                    <div class="absolute left-0 bottom-0 w-60 h-60 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-2 text-cyan-400 text-xs font-semibold uppercase tracking-wider mb-2">
+                            <i class="fa-solid fa-mobile-screen"></i> <span>Cross-Platform OS</span>
+                        </div>
+                        <h4 class="text-2xl font-bold text-white mb-3">Standalone Android APK & Web App</h4>
+                        <p class="text-slate-400 text-sm mb-6">
+                            Access your files smoothly on modern mobile browsers or download our standalone Android APK for native background sync and push notifications.
+                        </p>
+                        <div class="flex flex-wrap gap-3">
+                            <button onclick="showToast('Downloading CAgen1s Android APK v2.4...', 'success')" class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-4 py-2.5 rounded-xl font-semibold transition-all flex items-center gap-2">
+                                <i class="fa-brands fa-android"></i> Download APK
+                            </button>
+                            <button onclick="showToast('Web App installed successfully!', 'success')" class="bg-surfaceHighlight hover:bg-white/10 text-slate-200 text-xs px-4 py-2.5 rounded-xl font-semibold border border-white/10 transition-all flex items-center gap-2">
+                                <i class="fa-solid fa-globe"></i> Launch Web App
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Phone Mockup Graphic -->
+                    <div class="w-48 h-64 bg-surfaceHighlight rounded-3xl p-3 border-2 border-white/20 shadow-2xl relative flex flex-col justify-between shrink-0">
+                        <div class="w-16 h-3 bg-obsidian rounded-full mx-auto"></div>
+                        <div class="space-y-2">
+                            <div class="bg-obsidian/80 p-2 rounded-xl text-[10px] text-white flex items-center justify-between">
+                                <span>Telegram Vault</span>
+                                <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                            </div>
+                            <div class="bg-obsidian/80 p-2 rounded-xl text-[10px] text-slate-300">
+                                <div class="font-bold">Holiday_2026.zip</div>
+                                <div class="text-[8px] text-slate-500">1.8 GB • Synced</div>
+                            </div>
+                        </div>
+                        <div class="w-20 h-1 bg-white/30 rounded-full mx-auto"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Unified Dashboard Preview -->
+    <section id="dashboard" class="py-24 relative border-t border-white/5 bg-surface/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-xs uppercase tracking-widest text-cyan-400 font-bold mb-3">Logged-In Experience</h2>
+                <h3 class="text-3xl sm:text-4xl font-bold text-white mb-4">One screen for all your files.</h3>
+                <p class="text-slate-400">Explore our comprehensive unified dashboard tracking storage health, folder categories, and Telegram sync status in real time.</p>
+            </div>
+
+            <!-- Dashboard Mockup Showcase -->
+            <div class="max-w-6xl mx-auto glass-panel rounded-3xl overflow-hidden shadow-2xl border border-white/10">
+                <!-- Dashboard Top Bar -->
+                <div class="bg-surfaceHighlight px-6 py-4 flex flex-col sm:flex-row items-center justify-between border-b border-white/10 gap-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-3 h-3 rounded-full bg-rose-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                        <span class="text-xs text-slate-400 font-mono ml-2">CAgen1s Dashboard v2.4 — Live Session</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 rounded-full text-emerald-400 text-xs font-medium">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span>Telegram Bot Bridge Connected & Synced</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Content Area -->
+                <div class="grid grid-cols-1 lg:grid-cols-4 min-h-[480px]">
+                    <!-- Sidebar Stats -->
+                    <div class="bg-surface/60 p-6 border-r border-white/5 space-y-6">
+                        <div>
+                            <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Storage Health</div>
+                            <div class="space-y-3">
+                                <div>
+                                    <div class="flex justify-between text-xs text-slate-300 mb-1">
+                                        <span>Managed Cloud</span>
+                                        <span class="font-mono">1.4 GB / 2 GB</span>
+                                    </div>
+                                    <div class="w-full h-2 bg-obsidian rounded-full overflow-hidden">
+                                        <div class="w-[70%] h-full bg-blue-600 rounded-full"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs text-slate-300 mb-1">
+                                        <span>Telegram Vault</span>
+                                        <span class="font-mono text-cyan-400">Infinite (84.2 GB)</span>
+                                    </div>
+                                    <div class="w-full h-2 bg-obsidian rounded-full overflow-hidden">
+                                        <div class="w-[45%] h-full bg-cyan-500 rounded-full"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Categories</div>
+                            <div class="space-y-1 text-xs font-medium text-slate-300">
+                                <a href="#" class="flex items-center justify-between p-2 rounded-lg bg-blue-600/20 text-blue-400">
+                                    <span class="flex items-center gap-2"><i class="fa-solid fa-folder"></i> Work Documents</span>
+                                    <span>24</span>
+                                </a>
+                                <a href="#" class="flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors">
+                                    <span class="flex items-center gap-2"><i class="fa-solid fa-folder"></i> Holiday Photos 2026</span>
+                                    <span>112</span>
+                                </a>
+                                <a href="#" class="flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors">
+                                    <span class="flex items-center gap-2"><i class="fa-solid fa-folder"></i> Archives & APKs</span>
+                                    <span>8</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Workspace -->
+                    <div class="lg:col-span-3 p-6 bg-obsidian/40 flex flex-col justify-between">
+                        <div>
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                                <div>
+                                    <div class="text-xs text-slate-400 mb-1">Home / Work Documents</div>
+                                    <h4 class="text-xl font-bold text-white">Active Repository</h4>
+                                </div>
+                                <button onclick="showToast('Upload modal triggered', 'info')" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i> Upload File
+                                </button>
+                            </div>
+
+                            <!-- File Table Mockup -->
+                            <div class="glass-panel rounded-2xl overflow-hidden border border-white/10">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-surfaceHighlight text-slate-400 uppercase font-mono text-[10px] border-b border-white/10">
+                                        <tr>
+                                            <th class="p-3.5">Name</th>
+                                            <th class="p-3.5">Engine</th>
+                                            <th class="p-3.5">Size</th>
+                                            <th class="p-3.5">Modified</th>
+                                            <th class="p-3.5 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-white/5 text-slate-300">
+                                        <tr class="hover:bg-white/5 transition-colors">
+                                            <td class="p-3.5 flex items-center gap-2 font-medium text-white">
+                                                <i class="fa-solid fa-file-excel text-emerald-400 text-base"></i> Q4_Financial_Audit.xlsx
+                                            </td>
+                                            <td class="p-3.5"><span class="bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded font-mono text-[10px]">Managed Cloud</span></td>
+                                            <td class="p-3.5 text-slate-400">4.8 MB</td>
+                                            <td class="p-3.5 text-slate-400">Today, 10:42 AM</td>
+                                            <td class="p-3.5 text-right">
+                                                <button onclick="showToast('Downloading Q4_Financial_Audit.xlsx', 'success')" class="text-blue-400 hover:text-blue-300 p-1"><i class="fa-solid fa-download"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-white/5 transition-colors">
+                                            <td class="p-3.5 flex items-center gap-2 font-medium text-white">
+                                                <i class="fa-solid fa-file-zipper text-cyan-400 text-base"></i> Holiday_Photos_2026.zip
+                                            </td>
+                                            <td class="p-3.5"><span class="bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded font-mono text-[10px]">Telegram Vault</span></td>
+                                            <td class="p-3.5 text-slate-400">1.8 GB</td>
+                                            <td class="p-3.5 text-slate-400">Yesterday</td>
+                                            <td class="p-3.5 text-right">
+                                                <button onclick="showToast('Streaming Holiday_Photos_2026.zip', 'success')" class="text-cyan-400 hover:text-cyan-300 p-1"><i class="fa-solid fa-play"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-white/5 transition-colors">
+                                            <td class="p-3.5 flex items-center gap-2 font-medium text-white">
+                                                <i class="fa-solid fa-file-code text-amber-400 text-base"></i> api_gateway_prod.js
+                                            </td>
+                                            <td class="p-3.5"><span class="bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded font-mono text-[10px]">Managed Cloud</span></td>
+                                            <td class="p-3.5 text-slate-400">124 KB</td>
+                                            <td class="p-3.5 text-slate-400">Oct 24, 2026</td>
+                                            <td class="p-3.5 text-right">
+                                                <button onclick="showToast('Downloading api_gateway_prod.js', 'success')" class="text-blue-400 hover:text-blue-300 p-1"><i class="fa-solid fa-download"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Footer Status Bar inside Dashboard -->
+                        <div class="pt-4 flex items-center justify-between text-[11px] text-slate-500 border-t border-white/5 mt-6">
+                            <span>Last synced: Just now</span>
+                            <span class="text-emerald-400 font-mono">256-bit AES Encryption Active</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. The Commitment & Footer -->
+    <section id="guarantees" class="py-24 relative border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Guarantees Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
+                <div class="glass-panel p-6 rounded-2xl text-center glass-panel-hover transition-all">
+                    <div class="w-12 h-12 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center text-xl mx-auto mb-4">
+                        <i class="fa-solid fa-ban"></i>
+                    </div>
+                    <h5 class="font-bold text-white mb-2">No Monthly Paywalls</h5>
+                    <p class="text-xs text-slate-400">Free core features with zero hidden subscription locks or surprise storage bills.</p>
+                </div>
+                <div class="glass-panel p-6 rounded-2xl text-center glass-panel-hover transition-all">
+                    <div class="w-12 h-12 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xl mx-auto mb-4">
+                        <i class="fa-solid fa-unlock-keyhole"></i>
+                    </div>
+                    <h5 class="font-bold text-white mb-2">No Proprietary Lock-ins</h5>
+                    <p class="text-xs text-slate-400">Your files remain accessible via standard protocols and your own connected Telegram channels.</p>
+                </div>
+                <div class="glass-panel p-6 rounded-2xl text-center glass-panel-hover transition-all">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl mx-auto mb-4">
+                        <i class="fa-solid fa-gauge-high"></i>
+                    </div>
+                    <h5 class="font-bold text-white mb-2">Generous 2GB File Caps</h5>
+                    <p class="text-xs text-slate-400">Handle large archives, 4K videos, and large datasets easily with robust file limits.</p>
+                </div>
+                <div class="glass-panel p-6 rounded-2xl text-center glass-panel-hover transition-all">
+                    <div class="w-12 h-12 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-xl mx-auto mb-4">
+                        <i class="fa-solid fa-terminal"></i>
+                    </div>
+                    <h5 class="font-bold text-white mb-2">Open Developer API</h5>
+                    <p class="text-xs text-slate-400">Fully documented developer endpoints with 10k req/min for custom pipeline integrations.</p>
+                </div>
+            </div>
+
+            <!-- Final Call to Action Banner -->
+            <div class="relative rounded-3xl overflow-hidden p-10 sm:p-16 text-center bg-gradient-to-tr from-blue-900/60 via-obsidian to-cyan-950/60 border border-blue-500/30 glow-blue mb-20">
+                <div class="absolute inset-0 bg-blue-600/5 backdrop-blur-sm pointer-events-none"></div>
+                <div class="relative z-10 max-w-2xl mx-auto">
+                    <h3 class="text-3xl sm:text-5xl font-extrabold text-white mb-4 tracking-tight">Stop paying for cloud to store your files.</h3>
+                    <p class="text-slate-300 text-sm sm:text-base mb-8">Deploy your secure cloud drive in seconds. Connect your Telegram account for infinite space today.</p>
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <button onclick="showToast('Downloading CAgen1s Android APK...', 'success')" class="w-full sm:w-auto bg-surfaceHighlight hover:bg-white/10 text-white font-semibold px-8 py-4 rounded-xl border border-white/20 transition-all flex items-center justify-center gap-2">
+                            <i class="fa-brands fa-android"></i> Download Android APK
+                        </button>
+                        <a href="#hero" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white font-semibold px-8 py-4 rounded-xl transition-all shadow-xl shadow-blue-600/30 flex items-center justify-center gap-2">
+                            <span>Get Started Free</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Navigation Columns & Logo -->
+            <footer class="pt-12 border-t border-white/10 grid grid-cols-2 md:grid-cols-5 gap-8 pb-12">
+                <!-- Col 1: Brand -->
+                <div class="col-span-2 space-y-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center text-white text-sm">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                        </div>
+                        <span class="text-lg font-bold tracking-tight text-white">CAgen1s</span>
+                    </div>
+                    <p class="text-xs text-slate-400 max-w-xs leading-relaxed">
+                        Store your files. Own your cloud. The next-generation hybrid cloud OS powered by managed infrastructure and personal Telegram vaults.
+                    </p>
+                    <div class="text-xs text-slate-500">
+                        © 2026 CAgen1s Inc. All rights reserved.
+                    </div>
+                </div>
+
+                <!-- Col 2: Product -->
+                <div class="space-y-3">
+                    <h6 class="text-xs font-bold uppercase tracking-wider text-white">Product</h6>
+                    <ul class="space-y-2 text-xs text-slate-400">
+                        <li><a href="#engines" class="hover:text-white transition-colors">Cloud Storage</a></li>
+                        <li><a href="#engines" class="hover:text-white transition-colors">Telegram Engine</a></li>
+                        <li><a href="#engines" class="hover:text-white transition-colors">REST API</a></li>
+                        <li><a href="#bento" class="hover:text-white transition-colors">Mobile App</a></li>
+                        <li><a href="#features" class="hover:text-white transition-colors">Pricing Tiers</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 3: Developers -->
+                <div class="space-y-3">
+                    <h6 class="text-xs font-bold uppercase tracking-wider text-white">Developers</h6>
+                    <ul class="space-y-2 text-xs text-slate-400">
+                        <li><a href="#" onclick="showToast('Opening API documentation...', 'info')" class="hover:text-white transition-colors">API Documentation</a></li>
+                        <li><a href="#" onclick="showToast('Opening GitHub SDKs...', 'info')" class="hover:text-white transition-colors">GitHub SDKs</a></li>
+                        <li><a href="#" onclick="showToast('System status: All systems operational', 'success')" class="hover:text-white transition-colors">System Status</a></li>
+                        <li><a href="#" onclick="showToast('Rate limits: 10,000 req/min', 'info')" class="hover:text-white transition-colors">Rate Limits</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 4: Company -->
+                <div class="space-y-3">
+                    <h6 class="text-xs font-bold uppercase tracking-wider text-white">Account</h6>
+                    <ul class="space-y-2 text-xs text-slate-400">
+                        <li><a href="#" onclick="showToast('Redirecting to sign in...', 'info')" class="hover:text-white transition-colors">Sign In</a></li>
+                        <li><a href="#" onclick="showToast('Opening privacy policy...', 'info')" class="hover:text-white transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" onclick="showToast('Opening terms of service...', 'info')" class="hover:text-white transition-colors">Terms of Service</a></li>
+                        <li><a href="#" onclick="showToast('Opening support portal...', 'info')" class="hover:text-white transition-colors">Support Portal</a></li>
+                    </ul>
+                </div>
+            </footer>
+
+        </div>
+    </section>
+
+    <!-- JavaScript Interactions -->
+    <script>
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Toast Notification System (Replaces alert())
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let bgClass = 'bg-blue-600 text-white';
+            let icon = 'fa-circle-check';
+            if (type === 'info') {
+                bgClass = 'bg-slate-800 text-slate-100 border border-white/10';
+                icon = 'fa-circle-info text-blue-400';
+            } else if (type === 'success') {
+                bgClass = 'bg-emerald-900/90 text-emerald-100 border border-emerald-500/30';
+                icon = 'fa-circle-check text-emerald-400';
+            }
+
+            toast.className = `pointer-events-auto flex items-center space-x-3 px-4 py-3 rounded-xl shadow-2xl text-xs font-medium transition-all transform translate-y-2 opacity-0 ${bgClass}`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-sm"></i><span>${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // Email Signup Form Handler
+        function handleSignup(event) {
+            event.preventDefault();
+            const emailInput = document.getElementById('signup-email');
+            if (emailInput.value) {
+                showToast(`Welcome! Activation link sent to ${emailInput.value}`, 'success');
+                emailInput.value = '';
+            }
+        }
+
+        // File Manager Category Switcher & Filter
+        let activeCategory = 'all';
+
+        function switchCategory(category) {
+            activeCategory = category;
+            
+            // Update button styles
+            ['all', 'work', 'design', 'finance'].forEach(cat => {
+                const btn = document.getElementById(`nav-${cat}`);
+                if (btn) {
+                    if (cat === category) {
+                        btn.className = 'w-full flex items-center space-x-2 px-3 py-2 rounded-lg bg-blue-600/20 text-blue-400 font-medium transition-colors text-left';
+                    } else {
+                        btn.className = 'w-full flex items-center space-x-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-white/5 transition-colors text-left';
+                    }
+                }
+            });
+
+            // Update folder title
+            const titles = {
+                all: 'Showing All Folders (4 Items)',
+                work: 'Product Launch Assets (2 Items)',
+                design: 'Design Elements (1 Item)',
+                finance: 'Financial Statements (1 Item)'
+            };
+            document.getElementById('current-folder-title').innerText = titles[category] || 'Filtered Files';
+
+            // Filter items
+            const items = document.querySelectorAll('.file-item');
+            items.forEach(item => {
+                const cat = item.getAttribute('data-category');
+                if (category === 'all' || cat === category) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // Search Filter in File Explorer
+        function filterFiles() {
+            const query = document.getElementById('file-search-input').value.toLowerCase();
+            const items = document.querySelectorAll('.file-item');
+            items.forEach(item => {
+                const name = item.getAttribute('data-name').toLowerCase();
+                if (name.includes(query)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
